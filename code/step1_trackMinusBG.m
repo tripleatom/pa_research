@@ -1,13 +1,12 @@
 %locate bacteria
 tic
-clc
-close all
-clear
+clc; close all; clear
 
-video_path = 'F:/2020at/pa_research/data/mytask';
+video_path = 'F:/2020at/pa_research/data';
 mat_path = 'F:/2020at/pa_research/mat/11.2';
 file = dir([video_path '/*.avi']);
 
+%% loop
 for oo = 1:length(file)
     current_proj = file(oo).name(1:end -4);
     disp(current_proj)
