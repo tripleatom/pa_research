@@ -16,18 +16,18 @@ for oo = 1:length(file)
     oo
     load([mat_path '/' file(oo).name]);
     FrameRate = movobj.FrameRate;
-    clear velocity
     colors = prism(lastlabel); clf;
 
     for i = 1:lastlabel
 
+        % calculate velocity
         if length(tracks(i).x) > track_threshold && length(tracks(i).y) > track_threshold
             [X, ~] = a_trous_dwt1D(tracks(i).x, 1);
             [Y, ~] = a_trous_dwt1D(tracks(i).y, 1);
             dx = X(2:end) - X(1:end - 1);
             dy = Y(2:end) - Y(1:end - 1);
             dr = sqrt(dx.^2 + dy.^2);
-            velocity(i).v = dr * FrameRate;
+            velocity(i).v = dr * FrameRate; % um/s
             velocity(i).mean = mean(velocity(i).v);
             mean_v(mean_v_flag) = velocity(i).mean;
             mean_v_flag = mean_v_flag + 1;
@@ -37,6 +37,8 @@ for oo = 1:length(file)
 
         plot(tracks(i).x,tracks(i).y,'Color',colors(i,1:3));
     end
+
+    velocity(i).v = [] % make sure the size of track and velocity is the same
 
     figure;
 

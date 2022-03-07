@@ -3,22 +3,15 @@ tic
 clc
 close all
 clear
-%folder = {'E:\HRtrackJD\20190918\0min\'; ...
-%        'E:\HRtrackJD\20190918\7min\'; ...
-%        'E:\HRtrackJD\20190918\45min\'; };
-%for fn = 1:3
-% path='I:\HRtrackJD\20190625\blank\';
-%    fn
-%   path = folder{fn};
-% cd('H:\HRtrackJD\20190516\result\H2O2');
-%    file = dir([path '/*.avi']);
 
-video_path = 'G:/11.2/mytask';
+video_path = 'F:/2020at/pa_research/data/mytask';
 mat_path = 'F:/2020at/pa_research/mat/11.2';
 file = dir([video_path '/*.avi']);
 
 for oo = 1:length(file)
-    oo
+    current_proj = file(oo).name(1:end -4);
+    disp(current_proj)
+    
     movobj = VideoReader([video_path '/' file(oo).name]); % read data from a movie
     nframes = movobj.NumFrames;
     FrameRate = movobj.FrameRate;
@@ -45,7 +38,7 @@ for oo = 1:length(file)
         % level = graythresh(f2);
         % bw = im2bw(f2, 0.3); %Set the threshold automatically or manually
         [A, D] = a_trous_dwt2D9P(f2, 3);
-        bw = sum(D, 3) <- 7; %%%-10 can be changed%%%
+        bw = sum(D, 3) <- 7; % -10 can be changed
         se = strel('disk', 1); %ԭ4
         bw = imopen(bw, se);
         bw = imclose(bw, se);
@@ -83,7 +76,7 @@ for oo = 1:length(file)
     baclabel(1:length(spanA)) = 1:length(spanA);
     lastlabel = length(spanA);
 
-    for i = min(frame):max(frame) - 1% loop over all frame(i),frame(i+1) pairs.
+    for i = min(frame):max(frame) - 1 % loop over all frame(i),frame(i+1) pairs.
         spanA = find(frame == i);
         spanB = find(frame == i + 1);
         dx = ones(length(spanA), 1) * x(spanB) - x(spanA)' * ones(1, length(spanB));
@@ -101,7 +94,7 @@ for oo = 1:length(file)
         from = spanA(from); to = spanB(to); orphan = spanB(orphan); % translate to ABSOLUTE indices
         baclabel(to) = baclabel(from); % propagate labels of connected beads
 
-        if ~isempty(orphan)% there is at least one new (or ambiguous) bead
+        if ~isempty(orphan) % there is at least one new (or ambiguous) bead
             baclabel(orphan) = lastlabel + (1:length(orphan)); % assign new labels for new beads.
             lastlabel = lastlabel + length(orphan); % keep track of running total number of beads
         end
@@ -112,9 +105,9 @@ for oo = 1:length(file)
     emptybac.majorlength = 0; emptybac.minorlength = 0;
     tracks(1:lastlabel) = deal(emptybac); % initialize for purposes of speed and memory management.
 
-    for i = 1:lastlabel% reassemble beadlabel into a structured array 'tracks' containing all info
+    for i = 1:lastlabel % reassemble beadlabel into a structured array 'tracks' containing all info
         baci = find(baclabel == i);
-        tracks(i).x = x(baci) / pixels_per_micron;
+        tracks(i).x = x(baci) / pixels_per_micron; % um
         tracks(i).y = y(baci) / pixels_per_micron;
         tracks(i).area = area(baci) / pixels_per_micron^2;
         tracks(i).boundingbox = boundingbox(:, baci);
@@ -124,39 +117,9 @@ for oo = 1:length(file)
         tracks(i).frame = frame(baci);
     end
 
-    %% calculate the velocity
-    for i = 1:lastlabel
-        Ax = tracks(i).x(1:length(tracks(i).x) - 1);
-        Bx = tracks(i).x(2:length(tracks(i).x));
-        Ay = tracks(i).y(1:length(tracks(i).y) - 1);
-        By = tracks(i).y(2:length(tracks(i).y));
-        dx = Bx - Ax;
-        dy = By - Ay;
-        dr = sqrt(dx.^2 + dy.^2);
-        velocity(i).v = dr * FrameRate;
-    end
-
-    %     hTrace=figure;
-    %     imshow(read(movobj,1)); colors=prism(lastlabel);hold on
-    %     for i=1:lastlabel
-    %        if length(velocity(i).v)>50
-    %         plot(tracks(i).x/5.3,tracks(i).y/5.3,'Color',colors(i,1:3),'LineStyle','none','Marker','.','MarkerSize',5);
-    %         axis ij
-    %         hold on;
-    %         plot(tracks(i).x/5.3,tracks(i).y/5.3,'Color',colors(i,1:3));
-    %         text(tracks(i).x(1)/5.3,tracks(i).y(1)/5.3,['tracks',(num2str(i))],'HorizontalAlignment','left')
-    %         axis ij
-    %           v=[v,[velocity(i).v]];
-    %        end
-    %
-    %     end
-    %     saveas(hTrace,[TraceAllName '.fig']);
-
     %% clear the workspace
-    save([mat_path '/' file(oo).name(1:end -4)], 'tracks', 'lastlabel', 'movobj', 'velocity','FrameRate')
+    save([mat_path '/' current_proj], 'tracks', 'lastlabel', 'movobj', 'FrameRate','current_proj')
     clearvars -except file mat_path video_path oo
 end
-
-%end
 
 toc
