@@ -10,7 +10,7 @@ file = dir([video_path '/*.avi']);
 for oo = 1:length(file)
     current_proj = file(oo).name(1:end -4);
     disp(current_proj)
-    
+
     movobj = VideoReader([video_path '/' file(oo).name]); % read data from a movie
     nframes = movobj.NumFrames;
     FrameRate = movobj.FrameRate;
@@ -117,7 +117,7 @@ for oo = 1:length(file)
     end
 
     %% clear the workspace
-    save([mat_path '/' current_proj], 'tracks', 'lastlabel', 'movobj', 'FrameRate','current_proj')
+    save([mat_path '/' current_proj], 'tracks', 'lastlabel', 'movobj', 'FrameRate', 'current_proj')
     clearvars -except file mat_path video_path oo
 end
 
