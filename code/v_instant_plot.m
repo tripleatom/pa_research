@@ -1,4 +1,5 @@
-clear; close all
+clc; clear; close all;
+
 mat_path = 'F:/2020at/pa_research/mat/11.2/delete_still';
 surf = 'liq';
 result_path = ['F:/2020at/pa_research/result/11.2/' surf];

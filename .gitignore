@@ -8,3 +8,5 @@ paper-Sanyuan
 mat
 *.avi
 *.tif
+*param.m
+*fit*.m
