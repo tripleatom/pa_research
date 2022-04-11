@@ -40,20 +40,36 @@ for oo = 1:length(file)
     end
 
 end
-duration_thres = 5/60;
-run = run(run>duration_thres);
 
-%% plt
+%% fit slope and plot
+[counts, edges, bin] = histcounts(run);
 
-h = histogram(run, 'Normalization', 'pdf');
-% h.BinWidth = .04;
-xlabel('run duration (s)')
-ylabel('probability density function')
+indexes = counts < 10 | counts > 1e3; % Remove unwanted data
+counts(indexes) = 0; % Set those bins to zero.
 
-title_text = [surf_or_liquid ' run duration distribution'];
+[~, index, v] = find(counts); % find non-zero frequence
+counts = counts(index);
+edges = edges(index);
+
+f = fit(edges', counts', 'exp1'); % fit exponential function
+plot(f, 'b--')
+hold on
+set(gca, 'YScale', 'log')
+
+g = gca;
+sigma_text = ['slope = ' num2str(f.b, '%.3f')];
+text(g.XLim(2) * .7, g.YLim(2)^.85, sigma_text)
+
+b = bar(edges, counts, 'EdgeAlpha', .2);
+b.FaceColor = 'none';
+xlabel('Time (s)')
+ylabel('Counts')
+legend('fitted curve')
+
+current_time = datestr(now, 'mmdd-HH');
+title_text = [surf_or_liquid ' run duration'];
 title(title_text)
-xlim([0 2])
-ylim([0 5.5])
+
 %% save
-fname = [result_path 'run_dur_' surf_or_liquid];
+fname = [result_path 'run_dur_' surf_or_liquid '_' current_time];
 saveas(gca, fname, 'png')
