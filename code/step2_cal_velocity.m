@@ -6,7 +6,6 @@ mat_path = 'F:/2020at/pa_research/mat/11.2';
 result_path = 'F:/2020at/pa_research/result/11.2';
 % result_path = 'F:/2020at/pa_research/result/11.2/surface';
 
-% mean_v_flag = 1;
 track_threshold = 50;
 
 file = dir([mat_path '/*.mat']);

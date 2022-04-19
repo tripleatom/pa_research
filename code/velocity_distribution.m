@@ -14,7 +14,7 @@ thres_or_not = true;
 
 whole_v = load_velocity(mat_path, surf_or_liquid, mean_or_v, thres_or_not);
 
-lens = 40; % field lens magnification
+lens = 40; % objective lens magnification
 whole_v = whole_v / lens;
 
 %% histogram
