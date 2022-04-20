@@ -5,14 +5,19 @@ result_path = 'F:/2020at/pa_research/result/11.2/distribution/';
 
 surf_or_liquid = 'liq';
 mode_choosen = 'reverse';
+% reverse all: reverse + worm
+% reverse : just reverse
+% worm: worm
+% run: run
 
 file = dir([mat_path surf_or_liquid '*.mat']);
 
 %% during of one mode
 mode = []; % unit is s
+
 track_num = 0;
 worm_track = 0;
-worm_thres = .55;
+worm_thres = .25;
 
 for oo = 1:length(file)
     load([mat_path '/' file(oo).name]);
@@ -21,7 +26,7 @@ for oo = 1:length(file)
     track_num = track_num + length(velocity);
 
     for i = 1:length(velocity)
-        
+
         velocity_marker = true;
 
         temp_v = velocity(i).v;
@@ -29,7 +34,7 @@ for oo = 1:length(file)
 
         if strcmp(mode_choosen, 'run')
             ind = temp_v > thres;
-        elseif strcmp(mode_choosen, 'reverse')
+        elseif strcmp(mode_choosen, 'reverse_all') || strcmp(mode_choosen, 'worm') || strcmp(mode_choosen, 'reverse')
             ind = (temp_v <= thres);
         end
 
@@ -45,11 +50,25 @@ for oo = 1:length(file)
                 mode_flag = false;
                 temp_time = (j - left) / FrameRate;
 
-                mode = [mode, temp_time];
+                if strcmp(mode_choosen, 'reverse_all') || strcmp(mode_choosen, 'run')
+                    mode = [mode, temp_time];
+                elseif strcmp(mode_choosen, 'reverse')
 
-                if temp_time > worm_thres && velocity_marker
-                    worm_track = worm_track + 1;
-                    velocity_marker = false;
+                    if temp_time <= worm_thres
+                        mode = [mode, temp_time];
+                    end
+
+                elseif strcmp(mode_choosen, 'worm')
+
+                    if temp_time > worm_thres
+                        mode = [mode, temp_time];
+                    end
+
+                    if temp_time > worm_thres && velocity_marker
+                        worm_track = worm_track + 1;
+                        velocity_marker = false;
+                    end
+
                 end
 
                 left = 0;
@@ -66,7 +85,6 @@ if strcmp(mode_choosen, 'reverse')
     disp(proportion)
 end
 
-worm_track
 %% fit slope and plot
 [counts, edges, bin] = histcounts(mode);
 
@@ -81,18 +99,20 @@ f = fit(edges', counts', 'exp1'); % fit exponential function
 plot(f, 'b--')
 hold on
 set(gca, 'YScale', 'log')
+% xlim([min(edges) 2.5])
+xlim([min(edges) .25]) % for worm
+ylim([10 1e3])
 
 g = gca;
 sigma_text = ['slope = ' num2str(f.b, '%.3f')];
-text(g.XLim(2) * .6, g.YLim(2)^.85, sigma_text)
+text(g.XLim(2) * .8, g.YLim(2)^.85, sigma_text)
 
-b = bar(edges, counts, 'EdgeAlpha', .2);
+b = bar(edges, counts, 'EdgeAlpha', .5);
 b.FaceColor = 'none';
 xlabel('Time (s)')
 ylabel('Counts')
 legend('fitted curve')
-xlim([min(edges) 2.5])
-ylim([10 1e3])
+
 
 current_time = datestr(now, 'mmdd-HH');
 title_text = [surf_or_liquid ' ' mode_choosen ' duration'];
