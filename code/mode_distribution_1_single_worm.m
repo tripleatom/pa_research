@@ -4,12 +4,13 @@ mat_path = 'F:/2020at/pa_research/mat/11.2/with_angle/';
 result_path = 'F:/2020at/pa_research/result/11.2/track_eg/';
 
 surf_or_liquid = 'surf';
+oo = 9;
+i = 59;
 
 file = dir([mat_path surf_or_liquid '*.mat']);
 lens_magnification = 40;
 
-oo = 4;
-i = 48;
+
 load([mat_path '/' file(oo).name]);
 
 temp_v = velocity(i).v;
@@ -17,11 +18,11 @@ temp_angle = angle_velocity(i).v; % radius
 thres = velocity(i).threshold;
 
 worm_thres = .25;
-mode_choosen = 'reverse';
+mode_choosen = 'pause';
 %%
 if strcmp(mode_choosen, 'run')
     ind = temp_v > thres;
-elseif strcmp(mode_choosen, 'reverse')
+elseif strcmp(mode_choosen, 'pause')
     ind = (temp_v <= thres);
 end
 
@@ -57,7 +58,7 @@ x = 1:length(temp_v);
 x = x / FrameRate;
 
 current_time = datestr(now, 'mmdd-HH');
-title = [result_path num2str(oo) '_' num2str(i)];
+title = [result_path surf_or_liquid '_' num2str(oo) '_' num2str(i)];
 
 % track
 figure
@@ -104,7 +105,7 @@ ylabel('Y position ($\mu m$)', 'Interpreter', 'latex')
 legend(h1, 'run')
 
 if exist('h2', 'var')
-    legend([h1, h2],'run', 'reverse');
+    legend([h1, h2],'run', 'pause');
 end
 
 if exist('h3' ,'var')
@@ -112,7 +113,7 @@ if exist('h3' ,'var')
 end
 
 if exist('h2', 'var') && exist('h3' ,'var')
-    legend([h1,h2, h3],'run','reverse',  'worm');
+    legend([h1,h2, h3],'run','pause',  'worm');
 end
 
 f1name = [title '_track_' current_time];

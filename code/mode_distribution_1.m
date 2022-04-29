@@ -3,11 +3,11 @@ clc; clear; close all;
 mat_path = 'F:/2020at/pa_research/mat/11.2/with_angle/';
 result_path = 'F:/2020at/pa_research/result/11.2/distribution/';
 
-surf_or_liquid = 'liq';
-mode_choosen = 'reverse';
-% reverse all: reverse + worm
-% reverse : just reverse
-% worm: worm
+surf_or_liquid = 'surf';
+mode_choosen = 'pause2';
+% pause: pause + worm
+% pause2: pause exp2 fit
+% worm: just pick worm
 % run: run
 
 file = dir([mat_path surf_or_liquid '*.mat']);
@@ -34,7 +34,7 @@ for oo = 1:length(file)
 
         if strcmp(mode_choosen, 'run')
             ind = temp_v > thres;
-        elseif strcmp(mode_choosen, 'reverse_all') || strcmp(mode_choosen, 'worm') || strcmp(mode_choosen, 'reverse')
+        elseif strcmp(mode_choosen, 'pause') || strcmp(mode_choosen, 'pause2') || strcmp(mode_choosen, 'worm')
             ind = (temp_v <= thres);
         end
 
@@ -50,13 +50,8 @@ for oo = 1:length(file)
                 mode_flag = false;
                 temp_time = (j - left) / FrameRate;
 
-                if strcmp(mode_choosen, 'reverse_all') || strcmp(mode_choosen, 'run')
+                if strcmp(mode_choosen, 'pause') || strcmp(mode_choosen, 'run') || strcmp(mode_choosen, 'pause2')
                     mode = [mode, temp_time];
-                elseif strcmp(mode_choosen, 'reverse')
-
-                    if temp_time <= worm_thres
-                        mode = [mode, temp_time];
-                    end
 
                 elseif strcmp(mode_choosen, 'worm')
 
@@ -80,9 +75,13 @@ for oo = 1:length(file)
 
 end
 
-if strcmp(mode_choosen, 'reverse')
+if strcmp(mode_choosen, 'pause')
     proportion = worm_track / track_num;
     disp(proportion)
+end
+
+if strcmp(mode_choosen, 'worm')
+    worm_mean = mean(mode)
 end
 
 %% fit slope and plot
@@ -95,16 +94,29 @@ counts(indexes) = 0; % Set those bins to zero.
 counts = counts(index);
 edges = edges(index);
 
-f = fit(edges', counts', 'exp1'); % fit exponential function
+% fit exponential function
+if strcmp(mode_choosen, 'pause2')
+    f = fit(edges', counts', 'exp2');
+else
+    f = fit(edges', counts', 'exp1');
+end
+
 plot(f, 'b--')
 hold on
 set(gca, 'YScale', 'log')
-% xlim([min(edges) 2.5])
-xlim([min(edges) .25]) % for worm
+xlim([min(edges) 2.5])
+% xlim([min(edges) .25]) % for worm
 ylim([10 1e3])
 
 g = gca;
-sigma_text = ['slope = ' num2str(f.b, '%.3f')];
+
+if strcmp(mode_choosen, 'pause2')
+    sigma_text = ['\tau_1 = ' num2str(-1 / f.b, '%.3f') 's'; ...
+                '\tau_2 = ' num2str(-1 / f.d, '%.3f') 's'];
+else
+    sigma_text = ['\tau = ' num2str(-1 / f.b, '%.3f') 's'];
+end
+
 text(g.XLim(2) * .8, g.YLim(2)^.85, sigma_text)
 
 b = bar(edges, counts, 'EdgeAlpha', .5);
@@ -112,7 +124,6 @@ b.FaceColor = 'none';
 xlabel('Time (s)')
 ylabel('Counts')
 legend('fitted curve')
-
 
 current_time = datestr(now, 'mmdd-HH');
 title_text = [surf_or_liquid ' ' mode_choosen ' duration'];

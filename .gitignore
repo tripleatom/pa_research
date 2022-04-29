@@ -10,3 +10,5 @@ mat
 *.tif
 *param.m
 *fit*.m
+*.pptx
+*.docx
